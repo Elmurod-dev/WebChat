@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4203a9, #90bafc);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .textbox {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .textbox input {
+            width: 100%;
+            padding: 12px;
+            background: none;
+            border: 2px solid #4203a9;
+            border-radius: 5px;
+            outline: none;
+            font-size: 16px;
+            color: #333;
+            transition: 0.3s;
+        }
+
+        .textbox input:focus {
+            border-color: #90bafc;
+        }
+
+        .textbox label {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .textbox input:focus + label,
+        .textbox input:valid + label {
+            top: -10px;
+            background: white;
+            padding: 0 5px;
+            color: #4203a9;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #4203a9;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #90bafc;
+            color: #4203a9;
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 30px 20px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <h2>Login</h2>
+            <form action="{% url 'login' %}" method="post">
+                {% csrf_token %}
+                {% if errors %}
+                    <div class="textbox">
+                        <h5 style="color: red">{{ errors }}</h5>
+                    </div>
+                {% endif %}
+                <div class="textbox">
+                    <input type="text" name="username">
+                    <label>Username</label>
+                </div>
+                <div class="textbox">
+                    <input type="password" name="password">
+                    <label>Password</label>
+                </div>
+                <button type="submit" class="btn">Sign In</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

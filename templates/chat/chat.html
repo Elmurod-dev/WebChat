@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .chat-container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .message {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 10px;
+            max-width: 80%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sent {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+        }
+        .received {
+            background-color: #ececec;
+            align-self: flex-start;
+        }
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+        .message-content {
+            display: flex;
+            flex-direction: column;
+        }
+        .username {
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container chat-container mt-5">
+        <h2>Chat: {{ other_user.username }}</h2>
+        <div id="chat-box" class="d-flex flex-column">
+            {% for msg in messages %}
+                <div class="message {% if msg.from_user == request.user %}sent{% else %}received{% endif %}"
+                     data-username="{{ msg.from_user.username }}"
+                     data-avatar="{{ msg.from_user.avatar.url }}">
+                    <img src="{{ msg.from_user.avatar.url }}" class="avatar">
+                    <div class="message-content">
+                        <span class="username">{{ msg.from_user.username }}</span>
+                        <span>{{ msg.message }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <input id="message-input" class="form-control mt-3" type="text" placeholder="Xabar yozing...">
+        <button id="send-btn" class="btn btn-primary mt-2">Yuborish</button>
+    </div>
+
+    <script>
+        const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/{{ other_user.username }}/");
+        const userAvatars = new Map();  // Foydalanuvchi avatarlarini saqlash
+
+        // Oldindan yuklangan xabarlardagi avatarlarni saqlash
+        document.querySelectorAll(".message").forEach(msg => {
+            const username = msg.dataset.username;
+            const avatar = msg.dataset.avatar;
+            userAvatars.set(username, avatar);
+        });
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const chatBox = document.getElementById("chat-box");
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+
+            // Agar foydalanuvchi avvali xabar yuborgan bo'lsa, avatarini olish
+            let avatar_url = userAvatars.get(data.from_user) || "/static/default-avatar.png";
+
+            if (data.from_user === "{{ request.user.username }}") {
+                messageDiv.classList.add("sent");
+            } else {
+                messageDiv.classList.add("received");
+            }
+
+            messageDiv.innerHTML = `
+                <img src="${avatar_url}" class="avatar">
+                <div class="message-content">
+                    <span class="username">${data.from_user}</span>
+                    <span>${data.message}</span>
+                </div>
+            `;
+
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll pastga tushishi uchun
+        };
+
+        document.getElementById("send-btn").onclick = function() {
+            const messageInput = document.getElementById("message-input");
+            const message = messageInput.value.trim();
+            if (message !== "") {
+                socket.send(JSON.stringify({ "message": message }));
+                messageInput.value = "";
+            }
+        };
+    </script>
+</body>
+</html>
